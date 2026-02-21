@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memorama de Modismos · American English</title>
+<link href="https://fonts.googleapis.com/css2?family=Righteous&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0e17;
+  --surface: #1a1a2e;
+  --card-back: #16213e;
+  --text: #fffffe;
+  --sub: #a7a9be;
+
+  /* Zone colors */
+  --home:   #f7971e;
+  --work:   #4ecdc4;
+  --school: #a78bfa;
+  --person: #f06292;
+  --street: #81c784;
+
+  --radius: 18px;
+  --flip-duration: 0.55s;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Quicksand', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── PARTICLES BG ── */
+#particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.07;
+  animation: drift linear infinite;
+}
+@keyframes drift {
+  from { transform: translateY(110vh) scale(0.6); opacity: 0; }
+  10%  { opacity: 0.07; }
+  90%  { opacity: 0.07; }
+  to   { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+}
+
+/* ── APP SHELL ── */
+#app { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 16px 80px; }
+
+/* ── HEADER ── */
+header {
+  text-align: center;
+  padding: 36px 0 28px;
+}
+header h1 {
+  font-family: 'Righteous', cursive;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  letter-spacing: -1px;
+  background: linear-gradient(120deg, #f7971e, #f06292, #a78bfa, #4ecdc4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+header p { color: var(--sub); font-size: 1rem; font-weight: 600; }
+
+/* ── ZONE CAROUSEL ── */
+.zone-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.zone-arrow {
+  background: rgba(255,255,255,0.08);
+  border: none;
+  color: #fff;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+.zone-arrow:hover { background: rgba(255,255,255,0.18); transform: scale(1.1); }
+.zone-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.zone-tab {
+  padding: 9px 20px;
+  border-radius: 50px;
+  border: 2px solid transparent;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  background: rgba(255,255,255,0.06);
+  color: var(--sub);
+  transition: all 0.25s;
+}
+.zone-tab:hover { color: #fff; background: rgba(255,255,255,0.12); }
+.zone-tab.active { color: #fff; }
+.zone-tab[data-zone="home"].active   { background: var(--home);   border-color: var(--home); }
+.zone-tab[data-zone="work"].active   { background: var(--work);   border-color: var(--work);   color: #0f0e17; }
+.zone-tab[data-zone="school"].active { background: var(--school); border-color: var(--school); }
+.zone-tab[data-zone="person"].active { background: var(--person); border-color: var(--person); }
+.zone-tab[data-zone="street"].active { background: var(--street); border-color: var(--street); color: #0f0e17; }
+
+/* ── ZONE HEADER ── */
+.zone-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 22px;
+  padding: 16px 22px;
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  animation: fadeUp 0.4s ease;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+.zone-header-left { display: flex; align-items: center; gap: 14px; }
+.zone-icon { font-size: 2.2rem; }
+.zone-title { font-family: 'Righteous', cursive; font-size: 1.5rem; }
+.zone-stats { color: var(--sub); font-size: 0.85rem; font-weight: 600; }
+.zone-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 50px;
+  letter-spacing: 0.5px;
+}
+
+/* ── CONTROLS ── */
+.controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+  align-items: center;
+}
+.btn {
+  padding: 10px 22px;
+  border-radius: 50px;
+  border: none;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.2s;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-shuffle { background: rgba(255,255,255,0.1); color: #fff; }
+.btn-reset { background: rgba(255,255,255,0.06); color: var(--sub); }
+.round-select {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 50px;
+  color: #fff;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 9px 16px;
+  cursor: pointer;
+}
+.round-select option { background: #1a1a2e; }
+.score-display {
+  margin-left: auto;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--sub);
+}
+.score-display span { color: #fff; font-size: 1.1rem; }
+
+/* ── CARD GRID ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+  animation: fadeUp 0.4s ease;
+}
+
+/* ── MEMORY CARD ── */
+.mem-card {
+  aspect-ratio: 3/4;
+  perspective: 900px;
+  cursor: pointer;
+  user-select: none;
+}
+.mem-card-inner {
+  position: relative;
+  width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform var(--flip-duration) cubic-bezier(.4,0,.2,1);
+  border-radius: var(--radius);
+}
+.mem-card.flipped .mem-card-inner { transform: rotateY(180deg); }
+.mem-card.matched .mem-card-inner { transform: rotateY(180deg); }
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 10px;
+  text-align: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.card-back-face {
+  background: var(--card-back);
+  border: 2px solid rgba(255,255,255,0.06);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+}
+.card-back-face .card-logo {
+  font-family: 'Righteous', cursive;
+  font-size: 1rem;
+  color: rgba(255,255,255,0.2);
+  margin-top: 8px;
+}
+.card-back-face::before {
+  content: '';
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  border: 2px solid rgba(255,255,255,0.07);
+  margin-bottom: 8px;
+}
+.card-back-face .back-emoji {
+  font-size: 1.8rem;
+  position: absolute;
+}
+
+.card-front-face {
+  transform: rotateY(180deg);
+  border: 2px solid transparent;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+  gap: 8px;
+  transition: box-shadow 0.3s;
+}
+/* English card */
+.card-front-face.type-en {
+  background: linear-gradient(145deg, #1e2a4a, #16213e);
+}
+/* Spanish card */
+.card-front-face.type-es {
+  background: linear-gradient(145deg, #2a1e3a, #1e1628);
+}
+
+.card-emoji { font-size: 2rem; line-height: 1; }
+.card-type-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+.card-text {
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #fff;
+}
+
+/* Matched state */
+.mem-card.matched .card-front-face {
+  border-color: #4ade80;
+  box-shadow: 0 0 20px rgba(74,222,128,0.35);
+}
+.mem-card.matched .card-front-face::after {
+  content: '✓';
+  position: absolute;
+  top: 8px; right: 10px;
+  font-size: 0.8rem;
+  color: #4ade80;
+  font-weight: 900;
+}
+
+/* Zone color accents on english cards */
+[data-active-zone="home"]   .card-front-face.type-en { border-color: var(--home); }
+[data-active-zone="work"]   .card-front-face.type-en { border-color: var(--work); }
+[data-active-zone="school"] .card-front-face.type-en { border-color: var(--school); }
+[data-active-zone="person"] .card-front-face.type-en { border-color: var(--person); }
+[data-active-zone="street"] .card-front-face.type-en { border-color: var(--street); }
+
+/* ── SUCCESS MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 40px 36px;
+  text-align: center;
+  max-width: 420px;
+  width: 90%;
+  border: 1px solid rgba(255,255,255,0.1);
+  animation: popIn 0.4s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+}
+@keyframes popIn { from{opacity:0;transform:scale(.7)} to{opacity:1;transform:scale(1)} }
+.modal-emoji { font-size: 4rem; margin-bottom: 12px; }
+.modal h2 { font-family: 'Righteous', cursive; font-size: 1.8rem; margin-bottom: 8px; }
+.modal p { color: var(--sub); margin-bottom: 6px; font-size: 0.95rem; }
+.modal-example {
+  background: rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin: 16px 0;
+  font-size: 0.9rem;
+  color: #fff;
+  line-height: 1.6;
+  text-align: left;
+  border-left: 3px solid;
+}
+.modal-btns { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+.modal-btn {
+  padding: 12px 28px;
+  border-radius: 50px;
+  border: none;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: transform 0.15s;
+}
+.modal-btn:hover { transform: translateY(-2px); }
+.modal-btn-primary { background: #4ade80; color: #0f0e17; }
+.modal-btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* ── ZONE COMPLETE MODAL ── */
+.zone-complete {
+  display: none;
+  position: fixed; inset: 0;
+  z-index: 200;
+  background: rgba(0,0,0,0.85);
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(10px);
+}
+.zone-complete.show { display: flex; }
+.zone-complete-box {
+  background: var(--surface);
+  border-radius: 28px;
+  padding: 48px 40px;
+  text-align: center;
+  max-width: 460px;
+  width: 90%;
+  border: 1px solid rgba(255,255,255,0.12);
+  animation: popIn 0.5s cubic-bezier(.34,1.56,.64,1);
+}
+.zone-complete-box h2 { font-family: 'Righteous', cursive; font-size: 2.2rem; margin: 16px 0 8px; }
+.zone-complete-box p { color: var(--sub); margin-bottom: 20px; }
+.confetti-emoji { font-size: 5rem; }
+
+/* ── PROGRESS RING ── */
+.progress-wrap { display: flex; align-items: center; gap: 10px; }
+.progress-ring { --r: 20; }
+</style>
+</head>
+<body>
+
+<div id="particles"></div>
+
+<div id="app" data-active-zone="home">
+  <header>
+    <h1>🃏 Memorama de Modismos</h1>
+    <p>American English Idioms · Practica por área temática</p>
+  </header>
+
+  <!-- ZONE CAROUSEL -->
+  <div class="zone-nav">
+    <button class="zone-arrow" id="prevZone">&#8592;</button>
+    <div class="zone-tabs" id="zoneTabs"></div>
+    <button class="zone-arrow" id="nextZone">&#8594;</button>
+  </div>
+
+  <!-- ZONE HEADER -->
+  <div class="zone-header" id="zoneHeader"></div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <button class="btn btn-shuffle" onclick="shuffleAndRender()">🔀 Mezclar</button>
+    <button class="btn btn-reset" onclick="resetZone()">↺ Reiniciar</button>
+    <label style="color:var(--sub);font-size:.85rem;font-weight:700">Ronda:
+      <select class="round-select" id="roundSelect" onchange="changeRound()">
+        <option value="0">1–10</option>
+        <option value="1">11–20</option>
+        <option value="2">21–30</option>
+      </select>
+    </label>
+    <div class="score-display">Pares: <span id="scoreDisplay">0</span> / <span id="totalDisplay">10</span></div>
+  </div>
+
+  <!-- GRID -->
+  <div class="card-grid" id="cardGrid"></div>
+</div>
+
+<!-- MATCH MODAL -->
+<div class="modal-overlay" id="matchModal">
+  <div class="modal">
+    <div class="modal-emoji" id="modalEmoji"></div>
+    <h2>¡Par encontrado! 🎉</h2>
+    <p id="modalIdiom" style="font-size:1rem;font-weight:700;color:#fff;margin:4px 0"></p>
+    <p id="modalTranslation" style="font-size:.9rem"></p>
+    <div class="modal-example" id="modalExample"></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-primary" onclick="closeMatchModal()">¡Siguiente! ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- ZONE COMPLETE -->
+<div class="zone-complete" id="zoneComplete">
+  <div class="zone-complete-box">
+    <div class="confetti-emoji">🎊</div>
+    <h2 id="zcTitle">¡Zona completada!</h2>
+    <p id="zcMsg"></p>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-primary" onclick="nextZoneAuto()">Siguiente zona ▶</button>
+      <button class="modal-btn modal-btn-secondary" onclick="closeZoneComplete()">Seguir aquí</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA — 5 zonas × 30 modismos
+// ═══════════════════════════════════════════════════════════
+const ZONES = [
+  {
+    id: "home", label: "En el Hogar", icon: "🏠", color: "#f7971e",
+    idioms: [
+      { en:"Hit the sack",          es:"Irse a dormir",               emoji:"😴", ex:"I'm exhausted — I'm gonna hit the sack early tonight." },
+      { en:"Under the weather",     es:"Sentirse mal / enfermo",      emoji:"🤧", ex:"She didn't come to dinner; she's feeling under the weather." },
+      { en:"Bite the bullet",       es:"Aguantarse / armarse de valor",emoji:"💪", ex:"Just bite the bullet and call the plumber already." },
+      { en:"In hot water",          es:"En problemas",                emoji:"🔥", ex:"He's in hot water with his wife for forgetting their anniversary." },
+      { en:"Spill the beans",       es:"Revelar un secreto",          emoji:"🫘", ex:"Who spilled the beans about the surprise party?" },
+      { en:"Hit the roof",          es:"Ponerse furioso",             emoji:"😤", ex:"Mom hit the roof when she saw the broken window." },
+      { en:"Turn a blind eye",      es:"Hacer la vista gorda",        emoji:"👁️", ex:"Dad turned a blind eye to the mess in the garage." },
+      { en:"Burn the midnight oil", es:"Trasnochar trabajando",       emoji:"🕯️", ex:"She burned the midnight oil to finish the project." },
+      { en:"Couch potato",          es:"Persona sedentaria / floja",  emoji:"🥔", ex:"Stop being a couch potato and go for a walk!" },
+      { en:"Drive someone up the wall",es:"Sacar de quicio",         emoji:"🧱", ex:"The kids' noise is driving me up the wall." },
+      { en:"In the same boat",      es:"En la misma situación",       emoji:"🚣", ex:"We're all in the same boat — the power's out for everyone." },
+      { en:"Let the cat out of the bag",es:"Revelar accidentalmente", emoji:"🐱", ex:"He let the cat out of the bag about the divorce." },
+      { en:"Once in a blue moon",   es:"Muy de vez en cuando",        emoji:"🌙", ex:"We only eat takeout once in a blue moon." },
+      { en:"Piece of cake",         es:"Pan comido / muy fácil",      emoji:"🎂", ex:"Fixing that shelf was a piece of cake." },
+      { en:"Pull someone's leg",    es:"Tomarle el pelo a alguien",   emoji:"🦵", ex:"You got a promotion? Are you pulling my leg?" },
+      { en:"Sleep on it",           es:"Consultarlo con la almohada", emoji:"🛏️", ex:"Don't decide now — sleep on it and tell me tomorrow." },
+      { en:"Under one's roof",      es:"Bajo el mismo techo",         emoji:"🏡", ex:"As long as you live under my roof, you follow my rules." },
+      { en:"Clean slate",           es:"Borrón y cuenta nueva",       emoji:"🧹", ex:"After the argument, they decided to start with a clean slate." },
+      { en:"Kill two birds with one stone",es:"Matar dos pájaros de un tiro",emoji:"🐦", ex:"I'll drop the kids off and buy groceries — kill two birds with one stone." },
+      { en:"Bite off more than you can chew",es:"Abarcar más de lo que puedes",emoji:"😬", ex:"She bit off more than she could chew taking on three projects." },
+      { en:"Break the ice",         es:"Romper el hielo",             emoji:"🧊", ex:"He told a joke to break the ice at the family reunion." },
+      { en:"Lose one's temper",     es:"Perder los estribos",         emoji:"😡", ex:"Don't lose your temper — talk it out calmly." },
+      { en:"Get out of hand",       es:"Salirse de control",          emoji:"🌀", ex:"The argument got out of hand and they stopped speaking." },
+      { en:"Lay down the law",      es:"Imponer las reglas",          emoji:"📜", ex:"Dad laid down the law about phone use at dinner." },
+      { en:"Read between the lines",es:"Leer entre líneas",           emoji:"📖", ex:"She didn't say she was upset, but I could read between the lines." },
+      { en:"Walk on eggshells",     es:"Andar con pies de plomo",     emoji:"🥚", ex:"Everyone walks on eggshells when grandpa is in a bad mood." },
+      { en:"Hit the nail on the head",es:"Dar en el clavo",           emoji:"🔨", ex:"You hit the nail on the head — that's exactly the problem." },
+      { en:"Throw in the towel",    es:"Rendirse / darse por vencido",emoji:"🏳️", ex:"After years of fighting, they threw in the towel and divorced." },
+      { en:"Cut corners",           es:"Hacer las cosas a medias",    emoji:"✂️", ex:"Don't cut corners on the repairs — do it right." },
+      { en:"Bite the hand that feeds you",es:"Morder la mano que te da de comer",emoji:"🤚", ex:"Insulting your boss is biting the hand that feeds you." },
+    ]
+  },
+  {
+    id: "work", label: "Trabajo", icon: "💼", color: "#4ecdc4",
+    idioms: [
+      { en:"Get the ball rolling",  es:"Poner las cosas en marcha",   emoji:"⚽", ex:"Let's get the ball rolling on the new campaign." },
+      { en:"Back to the drawing board",es:"Volver a empezar desde cero",emoji:"📐", ex:"The client rejected our idea — back to the drawing board." },
+      { en:"Touch base",            es:"Ponerse en contacto / actualizar",emoji:"📞", ex:"Let's touch base on Friday to review the numbers." },
+      { en:"Think outside the box", es:"Pensar de manera creativa",   emoji:"📦", ex:"We need to think outside the box to solve this." },
+      { en:"On the same page",      es:"De acuerdo / alineados",      emoji:"📄", ex:"Are we all on the same page about the deadline?" },
+      { en:"Pull your weight",      es:"Poner de tu parte / cumplir", emoji:"🏋️", ex:"Everyone needs to pull their weight on this project." },
+      { en:"Cut to the chase",      es:"Ir al grano",                 emoji:"🎯", ex:"Cut to the chase — do we have the budget or not?" },
+      { en:"Red tape",              es:"Burocracia / papeleo",        emoji:"🔴", ex:"There's so much red tape to get a permit here." },
+      { en:"Keep the ball rolling", es:"Mantener el ritmo / continuar",emoji:"🔄", ex:"Good job! Now let's keep the ball rolling." },
+      { en:"Up in the air",         es:"Pendiente / sin resolver",    emoji:"☁️", ex:"The merger is still up in the air." },
+      { en:"Bite the bullet",       es:"Hacer algo difícil sin queja",emoji:"🦷", ex:"We have to bite the bullet and lay off some staff." },
+      { en:"Burn bridges",          es:"Quemar las naves / cortar lazos",emoji:"🔥", ex:"Don't burn bridges when you quit — you may need them later." },
+      { en:"Step up to the plate",  es:"Estar a la altura / asumir",  emoji:"⚾", ex:"With the manager gone, someone needs to step up to the plate." },
+      { en:"Go the extra mile",     es:"Dar el extra / esforzarse más",emoji:"🏃", ex:"She always goes the extra mile for her clients." },
+      { en:"Hit the ground running",es:"Empezar con todo / arrancar fuerte",emoji:"🚀", ex:"The new hire hit the ground running from day one." },
+      { en:"In the loop",           es:"Al tanto / informado",        emoji:"🔁", ex:"Keep me in the loop on any changes." },
+      { en:"On the clock",          es:"En horario de trabajo / pagado",emoji:"⏰", ex:"No personal calls while you're on the clock." },
+      { en:"Take the lead",         es:"Tomar el mando",              emoji:"🎖️", ex:"Who's going to take the lead on this presentation?" },
+      { en:"A tall order",          es:"Algo difícil de lograr",      emoji:"📏", ex:"Finishing by Friday is a tall order but let's try." },
+      { en:"Under the table",       es:"Por lo bajo / ilegalmente",   emoji:"🤫", ex:"He was paid under the table — no taxes, no record." },
+      { en:"Bottom line",           es:"En resumidas cuentas / lo esencial",emoji:"📊", ex:"The bottom line is: we need more sales." },
+      { en:"Corner the market",     es:"Dominar el mercado",          emoji:"🏆", ex:"That company has cornered the market on streaming." },
+      { en:"Learning curve",        es:"Curva de aprendizaje",        emoji:"📈", ex:"There's a steep learning curve with this new software." },
+      { en:"Put on the back burner",es:"Dejar para después / posponer",emoji:"🔥", ex:"Let's put that idea on the back burner for now." },
+      { en:"By the book",           es:"Siguiendo las reglas / al pie de la letra",emoji:"📚", ex:"Everything here is done strictly by the book." },
+      { en:"Ballpark figure",       es:"Cifra aproximada",            emoji:"🏟️", ex:"Give me a ballpark figure for the renovation cost." },
+      { en:"Dead end",              es:"Callejón sin salida",         emoji:"🚫", ex:"This negotiation has hit a dead end." },
+      { en:"Raise the bar",         es:"Poner el listón más alto",    emoji:"🥇", ex:"Her work always raises the bar for the whole team." },
+      { en:"Work around the clock", es:"Trabajar sin parar / 24/7",   emoji:"🕐", ex:"They worked around the clock to meet the deadline." },
+      { en:"Wear many hats",        es:"Tener muchos roles a la vez", emoji:"🎩", ex:"In a startup, you wear many hats." },
+    ]
+  },
+  {
+    id: "school", label: "Escuela", icon: "🎓", color: "#a78bfa",
+    idioms: [
+      { en:"Hit the books",         es:"Ponerse a estudiar",          emoji:"📚", ex:"Finals are next week — time to hit the books." },
+      { en:"Burn the midnight oil", es:"Estudiar hasta tarde",        emoji:"🕯️", ex:"She burned the midnight oil before her chemistry exam." },
+      { en:"Pass with flying colors",es:"Aprobar con muy buenas notas",emoji:"🌈", ex:"He passed his bar exam with flying colors." },
+      { en:"Learn the ropes",       es:"Aprender lo básico / cómo funciona",emoji:"🪢", ex:"It takes a semester to learn the ropes in college." },
+      { en:"Teacher's pet",         es:"El consentido/a del profesor", emoji:"🍎", ex:"Everyone thinks she's the teacher's pet." },
+      { en:"Cut class",             es:"Faltar a clase / hacer novillos",emoji:"✂️", ex:"He got caught cutting class for the third time." },
+      { en:"Ace an exam",           es:"Sacar 10 en un examen",       emoji:"🏅", ex:"She aced every test this semester." },
+      { en:"Pull an all-nighter",   es:"Quedarse despierto toda la noche estudiando",emoji:"🌙", ex:"I had to pull an all-nighter for the history paper." },
+      { en:"Behind the times",      es:"Anticuado / fuera de moda",   emoji:"⏳", ex:"That textbook is so behind the times." },
+      { en:"In over one's head",    es:"Metido en algo que supera tus capacidades",emoji:"🌊", ex:"She took AP Calculus and ended up in over her head." },
+      { en:"Get the hang of it",    es:"Agarrarle la onda / entender",emoji:"💡", ex:"It seemed hard, but I'm finally getting the hang of it." },
+      { en:"Make the grade",        es:"Dar el nivel / aprobar",      emoji:"📝", ex:"Not everyone makes the grade in medical school." },
+      { en:"School of hard knocks", es:"La escuela de la vida",       emoji:"👊", ex:"He never went to college; he graduated from the school of hard knocks." },
+      { en:"Put your thinking cap on",es:"Ponerse a pensar seriamente",emoji:"🧢", ex:"Put your thinking cap on — this problem is tricky." },
+      { en:"Bite the dust",         es:"Fracasar / no lograrlo",      emoji:"💨", ex:"Three students bit the dust in the first exam." },
+      { en:"Not rocket science",    es:"No es nada del otro mundo",   emoji:"🚀", ex:"It's not rocket science — you just follow the steps." },
+      { en:"Food for thought",      es:"Algo en qué pensar",          emoji:"🍽️", ex:"The professor's question was real food for thought." },
+      { en:"On the tip of one's tongue",es:"Tenerlo en la punta de la lengua",emoji:"👅", ex:"The answer is on the tip of my tongue!" },
+      { en:"Get a head start",      es:"Llevar ventaja / empezar antes",emoji:"🏁", ex:"Start studying now to get a head start on finals." },
+      { en:"Wrap one's head around",es:"Entender algo complicado",    emoji:"🧠", ex:"I can't wrap my head around quantum physics." },
+      { en:"Blank out",             es:"Quedarse en blanco",          emoji:"😶", ex:"I blanked out completely during the oral exam." },
+      { en:"Hit a wall",            es:"Quedarse atascado / bloqueado",emoji:"🧱", ex:"I hit a wall with my thesis and can't move forward." },
+      { en:"Hands down",            es:"Sin lugar a dudas",           emoji:"✋", ex:"That was hands down the hardest test I've taken." },
+      { en:"Hit the nail on the head",es:"Acertar de pleno",          emoji:"🔨", ex:"Your analysis hit the nail on the head." },
+      { en:"Over one's head",       es:"Demasiado difícil de entender",emoji:"💫", ex:"The lecture went completely over my head." },
+      { en:"Call it a day",         es:"Terminar por hoy",            emoji:"📅", ex:"We studied for 4 hours — let's call it a day." },
+      { en:"Know something inside out",es:"Conocer algo a fondo",     emoji:"🔍", ex:"She knows that subject inside out." },
+      { en:"Pick up where you left off",es:"Continuar desde donde quedaste",emoji:"📌", ex:"Let's pick up where we left off in Chapter 6." },
+      { en:"Fall behind",           es:"Quedarse rezagado",           emoji:"🐢", ex:"If you miss class, you'll fall behind quickly." },
+      { en:"Stay on top of things", es:"Mantenerse al día / organizado",emoji:"🗂️", ex:"Use a planner to stay on top of your assignments." },
+    ]
+  },
+  {
+    id: "person", label: "Personales", icon: "💬", color: "#f06292",
+    idioms: [
+      { en:"On top of the world",   es:"En la cima / muy feliz",      emoji:"🌍", ex:"She felt on top of the world after the promotion." },
+      { en:"Down in the dumps",     es:"Deprimido / triste",          emoji:"😔", ex:"He's been down in the dumps since the breakup." },
+      { en:"Keep one's chin up",    es:"Mantener la cabeza en alto",  emoji:"😤", ex:"Keep your chin up — things will get better." },
+      { en:"Wear your heart on your sleeve",es:"Mostrar las emociones abiertamente",emoji:"❤️", ex:"She wears her heart on her sleeve — you always know how she feels." },
+      { en:"Bite someone's head off",es:"Responderle de mala manera a alguien",emoji:"😠", ex:"Don't bite my head off — I was just asking!" },
+      { en:"Get cold feet",         es:"Arrepentirse / acobardarse",  emoji:"🥶", ex:"He got cold feet right before proposing." },
+      { en:"Give someone the cold shoulder",es:"Ignorar a alguien",   emoji:"🧊", ex:"She gave him the cold shoulder after their fight." },
+      { en:"Spill your guts",       es:"Desahogarse / contarlo todo", emoji:"💬", ex:"After a glass of wine, she spilled her guts about everything." },
+      { en:"Bend over backwards",   es:"Hacer todo lo posible / desvivirse",emoji:"🤸", ex:"He bent over backwards to make her feel welcome." },
+      { en:"Have a change of heart",es:"Cambiar de opinión / de sentimiento",emoji:"💓", ex:"She had a change of heart and decided to forgive him." },
+      { en:"Take heart",            es:"Animarse / no perder la esperanza",emoji:"💗", ex:"Take heart — the hardest part is already behind you." },
+      { en:"Fly off the handle",    es:"Perder los estribos de repente",emoji:"✈️", ex:"He flew off the handle when he saw the bill." },
+      { en:"Stab someone in the back",es:"Traicionar a alguien",      emoji:"🔪", ex:"My best friend stabbed me in the back by telling my secret." },
+      { en:"Add fuel to the fire",  es:"Echar leña al fuego",         emoji:"🔥", ex:"Don't add fuel to the fire — just let it go." },
+      { en:"Have a chip on one's shoulder",es:"Tener un complejo / resentimiento",emoji:"😒", ex:"He still has a chip on his shoulder about not getting the job." },
+      { en:"Bury the hatchet",      es:"Hacer las paces",             emoji:"🪓", ex:"They finally buried the hatchet after years of fighting." },
+      { en:"Cross one's fingers",   es:"Cruzar los dedos / tener esperanza",emoji:"🤞", ex:"Cross your fingers — I have a big interview today." },
+      { en:"Hang in there",         es:"Aguanta / no te rindas",      emoji:"🌟", ex:"Hang in there! The semester is almost over." },
+      { en:"Blow off steam",        es:"Desahogarse / relajarse",     emoji:"💨", ex:"She goes running to blow off steam after work." },
+      { en:"Swallow one's pride",   es:"Tragarse el orgullo",         emoji:"😤", ex:"He had to swallow his pride and ask for help." },
+      { en:"See eye to eye",        es:"Estar de acuerdo / entenderse",emoji:"👀", ex:"We don't always see eye to eye, but we respect each other." },
+      { en:"Drive a hard bargain",  es:"Negociar duro / ser exigente",emoji:"🤝", ex:"She drives a hard bargain — never accept her first offer." },
+      { en:"Lose touch",            es:"Perder el contacto",          emoji:"📵", ex:"We lost touch after moving to different cities." },
+      { en:"Keep in touch",         es:"Mantenerse en contacto",      emoji:"📱", ex:"Let's keep in touch after the trip." },
+      { en:"Go with the flow",      es:"Dejarse llevar / adaptarse",  emoji:"🌊", ex:"Stop stressing — just go with the flow." },
+      { en:"Bite your tongue",      es:"Morderse la lengua / callarse",emoji:"👅", ex:"I had to bite my tongue to not say something rude." },
+      { en:"Get on someone's nerves",es:"Poner los nervios de punta", emoji:"😬", ex:"His constant whistling gets on my nerves." },
+      { en:"Have a lot on one's plate",es:"Tener mucho que hacer",    emoji:"🍽️", ex:"I can't volunteer right now — I have a lot on my plate." },
+      { en:"Speak one's mind",      es:"Decir lo que piensas / hablar claro",emoji:"🗣️", ex:"Don't be shy — just speak your mind." },
+      { en:"Get a taste of one's own medicine",es:"Recibir lo que uno merece",emoji:"💊", ex:"He finally got a taste of his own medicine." },
+    ]
+  },
+  {
+    id: "street", label: "Coloquial / Calle", icon: "🗣️", color: "#81c784",
+    idioms: [
+      { en:"What's up?",            es:"¿Qué hay? / ¿Qué onda?",     emoji:"👋", ex:"Hey! What's up? Haven't seen you in ages!" },
+      { en:"No biggie",             es:"No es gran cosa / sin problema",emoji:"😌", ex:"You're late? No biggie — we just got here." },
+      { en:"Hang out",              es:"Pasar el rato / salir",       emoji:"🧑‍🤝‍🧑", ex:"We should hang out this weekend." },
+      { en:"Give a heads up",       es:"Avisar de antemano",          emoji:"📢", ex:"Give me a heads up before you come over." },
+      { en:"Catch someone's drift", es:"Entender lo que alguien quiere decir",emoji:"🎣", ex:"I'm not saying you're wrong — you catch my drift?" },
+      { en:"On the fence",          es:"Indeciso / entre dos opciones",emoji:"🚧", ex:"I'm still on the fence about going to the party." },
+      { en:"Bent out of shape",     es:"Enojado / molesto",           emoji:"😤", ex:"Don't get bent out of shape — it was just a joke." },
+      { en:"Chill out",             es:"Calmarse / relajarse",        emoji:"😎", ex:"Chill out! Everything is going to be fine." },
+      { en:"Cost an arm and a leg", es:"Costar un ojo de la cara",    emoji:"💸", ex:"That concert ticket cost me an arm and a leg." },
+      { en:"A blessing in disguise",es:"Un mal que resulta ser un bien",emoji:"🙏", ex:"Getting fired was a blessing in disguise — I found a better job." },
+      { en:"Rain on someone's parade",es:"Aguarle la fiesta",         emoji:"🌧️", ex:"I hate to rain on your parade, but the trip is canceled." },
+      { en:"Break a leg",           es:"¡Mucha suerte! (en espectáculos)",emoji:"🦵", ex:"You've got the show tonight? Break a leg!" },
+      { en:"Hit the spot",          es:"Dar en el clavo / satisfacer",emoji:"🎯", ex:"That cold lemonade really hit the spot." },
+      { en:"Throw someone under the bus",es:"Echarle la culpa a alguien / traicionar",emoji:"🚌", ex:"He threw me under the bus in front of the boss." },
+      { en:"Pull strings",          es:"Usar contactos / palancas",   emoji:"🎻", ex:"His dad pulled strings to get him into the program." },
+      { en:"Kick the bucket",       es:"Estirar la pata / morirse",   emoji:"🪣", ex:"The old car finally kicked the bucket." },
+      { en:"The whole nine yards",  es:"Todo el rollo / todo lo que hay",emoji:"📐", ex:"She gave me the whole nine yards about her vacation." },
+      { en:"Jump on the bandwagon", es:"Sumarse a una moda / seguir la corriente",emoji:"🎺", ex:"Everyone's into yoga now — I don't want to jump on the bandwagon." },
+      { en:"Pot calling the kettle black",es:"El que tiene tejado de vidrio no tira piedras",emoji:"☕", ex:"You're calling me lazy? That's the pot calling the kettle black." },
+      { en:"Miss the boat",         es:"Perder la oportunidad",       emoji:"⛵", ex:"He missed the boat on that investment." },
+      { en:"Shoot the breeze",      es:"Charlar / hablar de nada",    emoji:"💨", ex:"We just sat on the porch and shot the breeze for hours." },
+      { en:"Get a kick out of",     es:"Divertirle / sacar placer de",emoji:"😂", ex:"She gets a kick out of watching old cartoons." },
+      { en:"Up for grabs",          es:"Disponible para cualquiera",  emoji:"🤲", ex:"The last piece of pizza is up for grabs." },
+      { en:"Go bananas",            es:"Volverse loco / perder la cabeza",emoji:"🍌", ex:"The crowd went bananas when the band appeared." },
+      { en:"Knock it out of the park",es:"Hacerlo de manera excepcional",emoji:"⚾", ex:"Her speech knocked it out of the park." },
+      { en:"Have a blast",          es:"Pasarla increíble",           emoji:"🎉", ex:"We had a blast at the concert last night." },
+      { en:"Ditch",                 es:"Plantar / abandonar",         emoji:"🚶", ex:"She ditched us at the last minute." },
+      { en:"Crash",                 es:"Dormir en casa de alguien / desplomarse",emoji:"😪", ex:"Can I crash at your place tonight?" },
+      { en:"Flake out",             es:"Rajar / echarse para atrás",  emoji:"❄️", ex:"He flaked out on our plans again — so unreliable." },
+      { en:"Blow someone's mind",   es:"Dejar a alguien boquiabierto",emoji:"🤯", ex:"That magic trick blew my mind!" },
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let currentZoneIdx = 0;
+let currentRound   = 0; // 0=1-10, 1=11-20, 2=21-30
+let flipped        = [];
+let matched        = new Set();
+let locked         = false;
+let moves          = 0;
+let pendingMatchData = null;
+
+// ═══════════════════════════════════════════════════════════
+// PARTICLES
+// ═══════════════════════════════════════════════════════════
+const particlesEl = document.getElementById('particles');
+const colors = ['#f7971e','#4ecdc4','#a78bfa','#f06292','#81c784'];
+for(let i=0;i<20;i++){
+  const d = document.createElement('div');
+  d.className='particle';
+  const size = 20 + Math.random()*60;
+  d.style.cssText=`
+    width:${size}px; height:${size}px;
+    background:${colors[i%colors.length]};
+    left:${Math.random()*100}%;
+    animation-duration:${14+Math.random()*18}s;
+    animation-delay:${Math.random()*12}s;
+  `;
+  particlesEl.appendChild(d);
+}
+
+// ═══════════════════════════════════════════════════════════
+// ZONE NAVIGATION
+// ═══════════════════════════════════════════════════════════
+function buildZoneTabs(){
+  const tabs = document.getElementById('zoneTabs');
+  tabs.innerHTML = ZONES.map((z,i)=>`
+    <button class="zone-tab${i===currentZoneIdx?' active':''}" data-zone="${z.id}" onclick="switchZone(${i})">
+      ${z.icon} ${z.label}
+    </button>`).join('');
+}
+
+function switchZone(idx){
+  currentZoneIdx = idx;
+  currentRound   = 0;
+  document.getElementById('roundSelect').value = '0';
+  flipped=[]; matched=new Set(); locked=false; moves=0;
+  document.getElementById('app').dataset.activeZone = ZONES[idx].id;
+  buildZoneTabs();
+  renderZoneHeader();
+  renderGrid();
+}
+
+document.getElementById('prevZone').onclick = ()=>{
+  switchZone((currentZoneIdx - 1 + ZONES.length) % ZONES.length);
+};
+document.getElementById('nextZone').onclick = ()=>{
+  switchZone((currentZoneIdx + 1) % ZONES.length);
+};
+
+function renderZoneHeader(){
+  const z = ZONES[currentZoneIdx];
+  const done = matched.size / 2;
+  const total = 10;
+  document.getElementById('zoneHeader').innerHTML=`
+    <div class="zone-header-left">
+      <span class="zone-icon">${z.icon}</span>
+      <div>
+        <div class="zone-title" style="color:${z.color}">${z.label}</div>
+        <div class="zone-stats">Ronda ${currentRound+1}/3 · ${done}/${total} pares encontrados</div>
+      </div>
+    </div>
+    <span class="zone-badge" style="background:${z.color}20;color:${z.color};border:1px solid ${z.color}40">
+      ${z.idioms.length} modismos
+    </span>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// GRID
+// ═══════════════════════════════════════════════════════════
+function getSlice(){
+  const z = ZONES[currentZoneIdx];
+  const start = currentRound * 10;
+  return z.idioms.slice(start, start + 10);
+}
+
+function shuffleArr(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+let cardData = []; // flat array of card objects
+
+function renderGrid(){
+  const slice = getSlice();
+  // Build pairs
+  const pairs = [];
+  slice.forEach((item, idx)=>{
+    pairs.push({ id:idx, type:'en', text:item.en, emoji:item.emoji, item });
+    pairs.push({ id:idx, type:'es', text:item.es, emoji:item.emoji, item });
+  });
+  cardData = shuffleArr(pairs);
+
+  flipped=[]; matched=new Set(); locked=false; moves=0;
+  updateScore();
+  renderZoneHeader();
+
+  const grid = document.getElementById('cardGrid');
+  grid.innerHTML = cardData.map((c,i)=>`
+    <div class="mem-card" data-idx="${i}" onclick="flipCard(${i})">
+      <div class="mem-card-inner">
+        <div class="card-face card-back-face">
+          <div class="back-emoji">${c.emoji}</div>
+          <div class="card-logo">MEMORAMA</div>
+        </div>
+        <div class="card-face card-front-face type-${c.type}">
+          <div class="card-emoji">${c.emoji}</div>
+          <div class="card-type-label">${c.type==='en'?'🇺🇸 English':'🇲🇽 Español'}</div>
+          <div class="card-text">${c.text}</div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function updateScore(){
+  const done = matched.size / 2;
+  document.getElementById('scoreDisplay').textContent = done;
+  document.getElementById('totalDisplay').textContent = 10;
+}
+
+// ═══════════════════════════════════════════════════════════
+// FLIP LOGIC
+// ═══════════════════════════════════════════════════════════
+function flipCard(idx){
+  if(locked) return;
+  if(matched.has(idx)) return;
+  if(flipped.includes(idx)) return;
+  if(flipped.length >= 2) return;
+
+  const el = document.querySelector(`.mem-card[data-idx="${idx}"]`);
+  el.classList.add('flipped');
+  flipped.push(idx);
+
+  if(flipped.length === 2){
+    locked = true;
+    moves++;
+    checkMatch();
+  }
+}
+
+function checkMatch(){
+  const [a, b] = flipped;
+  const ca = cardData[a], cb = cardData[b];
+
+  if(ca.id === cb.id && ca.type !== cb.type){
+    // MATCH!
+    setTimeout(()=>{
+      document.querySelector(`.mem-card[data-idx="${a}"]`).classList.add('matched');
+      document.querySelector(`.mem-card[data-idx="${b}"]`).classList.add('matched');
+      matched.add(a); matched.add(b);
+      flipped = [];
+      locked = false;
+      updateScore();
+      renderZoneHeader();
+      pendingMatchData = ca.item;
+      showMatchModal(ca.item);
+    }, 600);
+  } else {
+    // No match
+    setTimeout(()=>{
+      document.querySelector(`.mem-card[data-idx="${a}"]`).classList.remove('flipped');
+      document.querySelector(`.mem-card[data-idx="${b}"]`).classList.remove('flipped');
+      flipped=[];
+      locked=false;
+    }, 900);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// MATCH MODAL
+// ═══════════════════════════════════════════════════════════
+function showMatchModal(item){
+  const z = ZONES[currentZoneIdx];
+  document.getElementById('modalEmoji').textContent = item.emoji;
+  document.getElementById('modalIdiom').textContent = `"${item.en}"`;
+  document.getElementById('modalTranslation').textContent = `➜ ${item.es}`;
+  document.getElementById('modalExample').style.borderColor = z.color;
+  document.getElementById('modalExample').innerHTML =
+    `<strong style="color:${z.color}">Example:</strong><br>"${item.ex}"`;
+  document.getElementById('matchModal').classList.add('show');
+}
+
+function closeMatchModal(){
+  document.getElementById('matchModal').classList.remove('show');
+  // check zone complete
+  if(matched.size === 20){
+    setTimeout(showZoneComplete, 300);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// ZONE COMPLETE
+// ═══════════════════════════════════════════════════════════
+function showZoneComplete(){
+  const z = ZONES[currentZoneIdx];
+  document.getElementById('zcTitle').textContent = `¡${z.label} completada! ${z.icon}`;
+  document.getElementById('zcMsg').textContent =
+    `¡Encontraste todos los pares en ${moves} intentos! ¿Quieres continuar con la siguiente zona?`;
+  document.getElementById('zoneComplete').classList.add('show');
+}
+
+function closeZoneComplete(){
+  document.getElementById('zoneComplete').classList.remove('show');
+}
+
+function nextZoneAuto(){
+  document.getElementById('zoneComplete').classList.remove('show');
+  switchZone((currentZoneIdx + 1) % ZONES.length);
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONTROLS
+// ═══════════════════════════════════════════════════════════
+function shuffleAndRender(){
+  renderGrid();
+}
+function resetZone(){
+  renderGrid();
+}
+function changeRound(){
+  currentRound = parseInt(document.getElementById('roundSelect').value);
+  renderGrid();
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+buildZoneTabs();
+renderZoneHeader();
+renderGrid();
+</script>
+</body>
+</html>
